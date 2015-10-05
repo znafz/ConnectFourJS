@@ -201,8 +201,15 @@ ConnFour.startGameHandler = function(){
 	//   ConnFour.board, ConnFour.redPlayer, and ConnFour.blackPlayer
 	// Create and/or initialize these objects according
 	//   to the user's selected players (on the HTML form)
-	ConnFour.redPlayer = new ConnFour.HumanPlayer(ConnFour.RED);
-	ConnFour.blackPlayer = new ConnFour.RandomPlayer(ConnFour.BLACK);
+	if(document.getElementById("red_player_selector").value === "Human")
+		ConnFour.redPlayer = new ConnFour.HumanPlayer(ConnFour.RED);
+	else if(document.getElementById("red_player_selector").value === "Random")
+		ConnFour.redPlayer = new ConnFour.RandomPlayer(ConnFour.RED);
+	if(document.getElementById("black_player_selector").value === "Human")
+		ConnFour.blackPlayer = new ConnFour.HumanPlayer(ConnFour.BLACK);
+	else if(document.getElementById("black_player_selector").value === "Random")
+		ConnFour.blackPlayer = new ConnFour.RandomPlayer(ConnFour.BLACK);
+
 	var canvas = document.getElementById('board_canvas');
 	ConnFour.theBoard = new ConnFour.Board(canvas);
 	ConnFour.status = ConnFour.NOT_FINISHED;
@@ -309,10 +316,10 @@ ConnFour.Board.prototype.drawBoard = function(canvas){
 	}
 
 	if(ConnFour.status === ConnFour.BLACK_WIN){
-		document.getElementById("turn_text").innerHTML = ConnFour.blackPlayer.getID() + "wins!";
+		document.getElementById("turn_text").innerHTML = ConnFour.blackPlayer.getID() + " wins!";
 		document.getElementById("turn_circle").setAttribute("fill", "black");
 	} else if (ConnFour.status === ConnFour.RED_WIN) {
-		document.getElementById("turn_text").innerHTML = ConnFour.redPlayer.getID() + "wins!";
+		document.getElementById("turn_text").innerHTML = ConnFour.redPlayer.getID() + " wins!";
 		document.getElementById("turn_circle").setAttribute("fill", "red");
 	} else if (ConnFour.status === ConnFour.DRAW) {
 		document.getElementById("turn_text").innerHTML = "It's a draw!";
@@ -501,7 +508,7 @@ ConnFour.RandomPlayer.prototype.makeMove = function(){
 		var moveCol = Math.floor((Math.random() * ConnFour.cols));
 		var newRow = ConnFour.theBoard.getTopRow(moveCol);
 		while(newRow < 0){ // making sure that he doesn't try to place a piece in a full column
-			console.log("Whoops! That row's full!")
+			console.log("Whoops! That column's full!")
 			moveCol = Math.floor((Math.random() * ConnFour.cols));
 			newRow = ConnFour.theBoard.getTopRow(moveCol);
 		}
@@ -515,7 +522,7 @@ ConnFour.RandomPlayer.prototype.makeMove = function(){
 		}
 		//switch to the other player
 		ConnFour.theBoard.changeActivePlayer();
-	}, 2000);
+	}, 1000);
 	
 	
 };
@@ -543,7 +550,7 @@ ConnFour.SmartPlayer.prototype.makeMove = function(){
 		}
 		//switch to the other player
 		ConnFour.theBoard.changeActivePlayer();
-	}, 2000);
+	}, 1100);
 	
 };
 
