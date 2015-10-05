@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+<link rel="stylesheet" href="ConnFour.css" type="text/css" media="screen" />
+<title>Connect Four</title>
+</head>
+
+<body>
+
+<h1>Connect Four</h1>
+
+<h1>Zachary Nafziger</h1>
+
+<div id="turn_div">
+<svg xmlns="http://www.w3.org/2000/svg" id="turn_svg" height="1.2em" width="1.2em">
+  <circle id="turn_circle" cx="0.6em" cy="0.6em" r="0.5em" stroke="black"
+  stroke-width="2" fill="red"/>
+</svg>
+<p id="turn_text">Game has not started yet.</p>
+</div>
+
+<div id="canvas_wrapper">
+<canvas id='board_canvas'>
+Your browser does not support the HTML5 canvas tag.
+</canvas>
+</div>
+
+<input type="button" id="start_game" value="Start Game" />
+
+<br />
+
+Red player: <select id="red_player_selector">
+<option value="Human">Human</option>
+<option value="Random">Random</option>
+<option value="Smart">Smart</option>
+</select>
+
+Black player: <select id="black_player_selector">
+<option value="Human">Human</option>
+<option value="Random">Random</option>
+<option value="Smart">Smart</option>
+</select>
+
+<script type="text/javascript" src="ConnFour.js"></script>
+
+</body>
+
+</html>

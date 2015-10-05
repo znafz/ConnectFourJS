@@ -1,0 +1,27 @@
+
+* {
+    font-family: sans-serif;
+}
+
+h1{
+    text-align: center;
+}
+
+#turn_div{
+    padding-left: 10%;
+}
+
+#turn_svg{
+    float: left;
+    margin: 0 0.2em 0 0.2em;
+}
+
+#canvas_wrapper{
+    text-align: center;
+}
+
+canvas {
+    border: 2px solid #000;
+}
+
+
