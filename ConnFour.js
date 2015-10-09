@@ -63,28 +63,24 @@ var ConnFour = {
 
 	this.name = (name || "");
 	this.color = (color || null);
-	//return this;
     },
 
     RandomPlayer : function(color){
 	"use strict";
 		this.name = "RandomPlayer";
 		this.color = (color || null);
-		//return this;
     },
 
     SmartPlayer : function(color){
 	"use strict";
 		this.name = "SmartPlayer";
 		this.color = (color || null);
-		//return this;
     },
 
     HumanPlayer : function(color){
 	"use strict";
 		this.name = "HumanPlayer";
 		this.color = (color || null);
-		//return this;
     },
 
     // Called when the window gets resized
@@ -173,7 +169,6 @@ ConnFour.clickHandler = function(evt){
     col = Math.floor(posx / cellSize);
 
 	// row and col are now set to the row and column indices where the user clicked
-	
 	// TODO: Handle the business/game logic
 	console.log("CLICKED ROW " + row + " AND COL " + col);
 	var newRow = ConnFour.theBoard.getTopRow(col);
@@ -197,7 +192,7 @@ ConnFour.clickHandler = function(evt){
 ConnFour.startGameHandler = function(){
     "use strict";
 
-	// TODO: Set the main three components of the state:
+	// DONE: Set the main three components of the state:
 	//   ConnFour.board, ConnFour.redPlayer, and ConnFour.blackPlayer
 	// Create and/or initialize these objects according
 	//   to the user's selected players (on the HTML form)
@@ -205,14 +200,18 @@ ConnFour.startGameHandler = function(){
 		ConnFour.redPlayer = new ConnFour.HumanPlayer(ConnFour.RED);
 	else if(document.getElementById("red_player_selector").value === "Random")
 		ConnFour.redPlayer = new ConnFour.RandomPlayer(ConnFour.RED);
+	else 
+		ConnFour.redPlayer = new ConnFour.SmartPlayer(ConnFour.RED);
 	if(document.getElementById("black_player_selector").value === "Human")
 		ConnFour.blackPlayer = new ConnFour.HumanPlayer(ConnFour.BLACK);
 	else if(document.getElementById("black_player_selector").value === "Random")
 		ConnFour.blackPlayer = new ConnFour.RandomPlayer(ConnFour.BLACK);
+	else
+		ConnFour.blackPlayer = new ConnFour.SmartPlayer(ConnFour.BLACK);
 
 	var canvas = document.getElementById('board_canvas');
-	ConnFour.theBoard = new ConnFour.Board(canvas);
 	ConnFour.status = ConnFour.NOT_FINISHED;
+	ConnFour.theBoard = new ConnFour.Board(canvas);
 	
 	// Now that the board and players are set,
 	// we start the game by calling the red player's makeMove() function
@@ -432,12 +431,18 @@ ConnFour.Board.prototype.checkForWin = function(newrow, newcol){
     
 };    
 
-// TODO: complete the function so it returns a deep
+// DONE: complete the function so it returns a deep
 //   copy of this (i.e., changes to this will not
 //   affect the returned board, and vice versa)
 ConnFour.Board.prototype.clone = function(){
     "use strict";
-
+    var canvas = document.getElementById('board_canvas');
+    var newBoard = new ConnFour.Board(canvas);
+    //copy boardState, nextTurn, status using JSON.parse so I'm not just passing a reference
+    newBoard.boardState = JSON.parse(JSON.stringify(this.boardState));
+    newBoard.nextTurn = JSON.parse(JSON.stringify(this.nextTurn));
+    newBoard.status = JSON.parse(JSON.stringify(this.status));
+    return newBoard;
 };
 
 
@@ -496,11 +501,12 @@ ConnFour.HumanPlayer.prototype.makeMove = function(){
     //signal the clickHandler
     ConnFour.ACCEPTING_CLICKS = true;
 
+
 };
 
 ConnFour.RandomPlayer.prototype.makeMove = function(){
     "use strict";
-    console.log("RandomPlayer's turn")
+    console.log(this.getID() + "'s turn");
 	// DONE: complete this function
 	//wait a little bit
 	setTimeout(function(){
@@ -508,7 +514,6 @@ ConnFour.RandomPlayer.prototype.makeMove = function(){
 		var moveCol = Math.floor((Math.random() * ConnFour.cols));
 		var newRow = ConnFour.theBoard.getTopRow(moveCol);
 		while(newRow < 0){ // making sure that he doesn't try to place a piece in a full column
-			console.log("Whoops! That column's full!")
 			moveCol = Math.floor((Math.random() * ConnFour.cols));
 			newRow = ConnFour.theBoard.getTopRow(moveCol);
 		}
@@ -529,28 +534,86 @@ ConnFour.RandomPlayer.prototype.makeMove = function(){
 
 ConnFour.SmartPlayer.prototype.makeMove = function(){
     "use strict";
-	// TODO: complete this function
-	console.log("SmartPlayer's turn")
+	// DONE: complete this function
+	console.log(this.getID() + "'s turn");
+
 	//wait a little bit
 	setTimeout(function(){
-	    //pick a random column
-		var moveCol = Math.floor((Math.random() * ConnFour.cols));
-		var newRow = ConnFour.theBoard.getTopRow(moveCol);
-		while(newRow < 0){ // making sure that he doesn't try to place a piece in a full column
-			moveCol = Math.floor((Math.random() * ConnFour.cols));
-			newRow = ConnFour.theBoard.getTopRow(moveCol);
+	    //go through the columns
+		var moveCol;
+		var moveRow;
+		var foundOne = false;
+		for(moveCol=0;moveCol<ConnFour.cols;moveCol++){
+			moveRow = ConnFour.theBoard.getTopRow(moveCol);
+			if(moveRow > 0){ //if the row isn't full
+				var canvas = document.getElementById('board_canvas');
+				var tempBoard =  new ConnFour.Board(canvas);
+				tempBoard = ConnFour.theBoard.clone();
+				tempBoard.boardState[moveRow][moveCol] = ConnFour.theBoard.nextTurn;
+				if(tempBoard.checkForWin(moveRow, moveCol) === true){
+					foundOne = true;
+					console.log("	found a winning move!")
+					break;
+				}
+					
+
+			}
+
 		}
-		console.log("Placing a piece on column " + moveCol);
-		ConnFour.theBoard.boardState[newRow][moveCol] = ConnFour.theBoard.nextTurn;
+
+		//if there wasn't a winning move found, check to see if the other player can win somehow.
+		//if so, take that spot
+		if(!foundOne){
+			console.log("	didn't find a winning move, checking for other player");
+			var otherColor = ConnFour.RED;
+			if(ConnFour.theBoard.nextTurn === otherColor)
+				otherColor = ConnFour.BLACK;
+			for(moveCol=0;moveCol<ConnFour.cols;moveCol++){
+				moveRow = ConnFour.theBoard.getTopRow(moveCol);
+				if(moveRow > 0){ //if the row isn't full
+					var canvas = document.getElementById('board_canvas');
+					var tempBoard =  new ConnFour.Board(canvas);
+					tempBoard = ConnFour.theBoard.clone();
+					tempBoard.boardState[moveRow][moveCol] = otherColor;
+					if(tempBoard.checkForWin(moveRow, moveCol) === true){
+						foundOne = true;
+						console.log("	found a winning move for the other player! blocking them")
+						break;
+					}
+						
+
+				}
+
+			}
+			
+		}
+		
+		//If a move still isn't found, pick randomly
+		if(!foundOne){
+			console.log("	still didn't find anything. picking randomly")
+;			moveCol = Math.floor((Math.random() * ConnFour.cols));
+			moveRow = ConnFour.theBoard.getTopRow(moveCol);
+			while(moveRow < 0){ // making sure that he doesn't try to place a piece in a full column
+				moveCol = Math.floor((Math.random() * ConnFour.cols));
+				moveRow = ConnFour.theBoard.getTopRow(moveCol);
+			}
+		}
+
+
+
+		console.log("	Placing a piece on column " + moveCol);
+		ConnFour.theBoard.boardState[moveRow][moveCol] = ConnFour.theBoard.nextTurn;
 		//see if they won
-		if(ConnFour.theBoard.checkForWin(newRow, moveCol)){
+		if(ConnFour.theBoard.checkForWin(moveRow, moveCol)){
 			if(ConnFour.theBoard.nextTurn == ConnFour.RED)
 				ConnFour.status = ConnFour.RED_WIN;
 			else ConnFour.status = ConnFour.BLACK_WIN;
 		}
 		//switch to the other player
 		ConnFour.theBoard.changeActivePlayer();
-	}, 1100);
+	}, 1000);
+
+	
 	
 };
 
